@@ -19,4 +19,5 @@ public interface EvidenceService {
     EvidenceDto updateEvidence(UUID id, EvidenceDto evidenceDto);
     EvidenceDto updateEvidenceStatus(UUID id, Evidence.EvidenceStatus status);
     void deleteEvidence(UUID id);
+    Page<EvidenceDto> getEvidenceByEmployee(UUID employeeId, Pageable pageable);
 } 

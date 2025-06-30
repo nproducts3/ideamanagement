@@ -301,4 +301,11 @@ public class EvidenceController {
         evidenceService.deleteEvidence(id);
         return ResponseEntity.noContent().build(); // Use noContent for successful deletion with no body
     }
+
+    @GetMapping("/employee/{employeeId}")
+    public ResponseEntity<Page<EvidenceDto>> getEvidenceByEmployee(
+            @PathVariable UUID employeeId,
+            Pageable pageable) {
+        return ResponseEntity.ok(evidenceService.getEvidenceByEmployee(employeeId, pageable));
+    }
 } 

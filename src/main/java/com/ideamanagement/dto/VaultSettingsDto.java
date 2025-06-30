@@ -21,4 +21,7 @@ public class VaultSettingsDto {
 
     @Schema(description = "Last update timestamp")
     private LocalDateTime updatedAt;
+
+    @Schema(description = "Employee ID")
+    private UUID employeeId;
 } 

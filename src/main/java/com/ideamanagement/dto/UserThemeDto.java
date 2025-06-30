@@ -13,4 +13,5 @@ public class UserThemeDto {
     private UserTheme.ThemeType theme;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UUID employeeId;
 } 

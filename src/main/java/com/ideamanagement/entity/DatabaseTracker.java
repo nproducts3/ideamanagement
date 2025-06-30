@@ -36,7 +36,11 @@ public class DatabaseTracker {
     @Column(name = "migrations_json", nullable = false, columnDefinition = "TEXT")
     private String migrationsJson = "[]";
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", foreignKey = @ForeignKey(name = "fk_dbtracker_employee", foreignKeyDefinition = "FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE"))
+    private Employee employee;
+
     public enum Status {
-        approved, in_review, created, failed
+        approved, pending, created, failed
     }
 } 

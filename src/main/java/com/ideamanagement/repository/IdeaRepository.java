@@ -13,4 +13,7 @@ public interface IdeaRepository extends JpaRepository<Idea, UUID> {
     Page<Idea> findByAssignedTo(String assignedTo, Pageable pageable);
     Page<Idea> findByStatus(Idea.Status status, Pageable pageable);
     Page<Idea> findByTagsContaining(String tag, Pageable pageable);
+    Page<Idea> findByEmployeeId(UUID employeeId, Pageable pageable);
+    Idea findByIdAndEmployeeId(UUID id, UUID employeeId);
+    void deleteByIdAndEmployeeId(UUID id, UUID employeeId);
 } 

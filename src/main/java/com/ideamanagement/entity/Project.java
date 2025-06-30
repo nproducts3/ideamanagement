@@ -26,6 +26,10 @@ public class Project {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", foreignKey = @ForeignKey(name = "fk_project_employee", foreignKeyDefinition = "FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE"))
+    private Employee employee;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

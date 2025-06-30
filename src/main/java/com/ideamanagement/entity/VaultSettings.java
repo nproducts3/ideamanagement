@@ -28,6 +28,10 @@ public class VaultSettings {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
     @PrePersist
     @PreUpdate
     protected void onUpdate() {

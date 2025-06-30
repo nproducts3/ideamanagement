@@ -67,4 +67,7 @@ public class EvidenceDto {
 
     @Schema(description = "File data for file uploads")
     private MultipartFile fileData;
+
+    @Schema(description = "Employee ID associated with the evidence")
+    private UUID employeeId;
 } 

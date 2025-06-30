@@ -29,4 +29,6 @@ public interface EvidenceRepository extends JpaRepository<Evidence, UUID> {
     Page<Evidence> findByIdea(Idea idea, Pageable pageable);
 
     List<Evidence> findByProjectIdAndTagsContaining(UUID projectId, String tag);
+
+    Page<Evidence> findByEmployeeId(UUID employeeId, Pageable pageable);
 } 

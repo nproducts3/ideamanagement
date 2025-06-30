@@ -17,4 +17,5 @@ public class SubscriptionDto {
     private LocalDate expiresAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UUID employeeId;
 } 

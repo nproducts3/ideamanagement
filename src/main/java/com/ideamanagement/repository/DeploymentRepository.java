@@ -14,4 +14,7 @@ public interface DeploymentRepository extends JpaRepository<Deployment, UUID> {
     Page<Deployment> findByStatus(Deployment.DeploymentStatus status, Pageable pageable);
     Page<Deployment> findByHealth(Deployment.HealthStatus health, Pageable pageable);
     Page<Deployment> findByVersion(String version, Pageable pageable);
+    Page<Deployment> findByEmployeeId(UUID employeeId, Pageable pageable);
+    Deployment findByIdAndEmployeeId(UUID id, UUID employeeId);
+    void deleteByIdAndEmployeeId(UUID id, UUID employeeId);
 } 

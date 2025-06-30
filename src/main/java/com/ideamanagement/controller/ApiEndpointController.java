@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequestMapping("/api/endpoints")
 @RequiredArgsConstructor
 @Tag(name = "API Endpoint Management", description = "APIs for managing API endpoints")
-@CrossOrigin(origins = {"http://localhost:8081", "http://localhost:3000"}, allowCredentials = "true")
+// @CrossOrigin(origins = "*", allowCredentials = "true")
 public class ApiEndpointController {
     private final ApiEndpointService apiEndpointService;
 
@@ -35,8 +35,10 @@ public class ApiEndpointController {
         @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     public ResponseEntity<ApiEndpointDto> createEndpoint(
+        @RequestParam UUID employeeId,
         @Parameter(description = "API endpoint details", required = true)
         @Valid @RequestBody ApiEndpointDto endpointDto) {
+        endpointDto.setEmployeeId(employeeId);
         return ResponseEntity.ok(apiEndpointService.createEndpoint(endpointDto));
     }
 
@@ -49,11 +51,11 @@ public class ApiEndpointController {
         @ApiResponse(responseCode = "404", description = "API endpoint not found")
     })
     public ResponseEntity<ApiEndpointDto> updateEndpoint(
-        @Parameter(description = "ID of the API endpoint to update", required = true)
         @PathVariable UUID id,
+        @RequestParam UUID employeeId,
         @Parameter(description = "Updated API endpoint details", required = true)
         @Valid @RequestBody ApiEndpointDto endpointDto) {
-        return ResponseEntity.ok(apiEndpointService.updateEndpoint(id, endpointDto));
+        return ResponseEntity.ok(apiEndpointService.updateEndpoint(id, employeeId, endpointDto));
     }
 
     @DeleteMapping("/{id}")
@@ -63,9 +65,9 @@ public class ApiEndpointController {
         @ApiResponse(responseCode = "404", description = "API endpoint not found")
     })
     public ResponseEntity<Void> deleteEndpoint(
-        @Parameter(description = "ID of the API endpoint to delete", required = true)
-        @PathVariable UUID id) {
-        apiEndpointService.deleteEndpoint(id);
+        @PathVariable UUID id,
+        @RequestParam UUID employeeId) {
+        apiEndpointService.deleteEndpoint(id, employeeId);
         return ResponseEntity.noContent().build();
     }
 
@@ -77,9 +79,9 @@ public class ApiEndpointController {
         @ApiResponse(responseCode = "404", description = "API endpoint not found")
     })
     public ResponseEntity<ApiEndpointDto> getEndpointById(
-        @Parameter(description = "ID of the API endpoint to retrieve", required = true)
-        @PathVariable UUID id) {
-        return ResponseEntity.ok(apiEndpointService.getEndpointById(id));
+        @PathVariable UUID id,
+        @RequestParam UUID employeeId) {
+        return ResponseEntity.ok(apiEndpointService.getEndpointById(id, employeeId));
     }
 
     @GetMapping
@@ -89,9 +91,10 @@ public class ApiEndpointController {
             content = @Content(schema = @Schema(implementation = Page.class)))
     })
     public ResponseEntity<Page<ApiEndpointDto>> getAllEndpoints(
+        @RequestParam UUID employeeId,
         @Parameter(description = "Pagination and sorting parameters")
         Pageable pageable) {
-        return ResponseEntity.ok(apiEndpointService.getAllEndpoints(pageable));
+        return ResponseEntity.ok(apiEndpointService.getAllEndpoints(employeeId, pageable));
     }
 
     @GetMapping("/status/{status}")

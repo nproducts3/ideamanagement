@@ -15,8 +15,8 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         
         // Allow all origins
-        config.addAllowedOrigin("http://localhost:8081");
-        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("*");
+        config.addAllowedOrigin("/**");
         
         // Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
         config.addAllowedMethod("*");
@@ -25,7 +25,7 @@ public class CorsConfig {
         config.addAllowedHeader("*");
         
         // Allow credentials (cookies, authorization headers, etc.)
-        config.setAllowCredentials(true);
+        // config.setAllowCredentials(true);
         
         // Apply this configuration to all paths
         source.registerCorsConfiguration("/**", config);

@@ -21,10 +21,16 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "ideas")
 public class Idea {
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.UUID)
+    // @JdbcTypeCode(SqlTypes.BINARY)
+    // @Column(columnDefinition = "BINARY(16)")
+    // private UUID id;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(columnDefinition = "BINARY(16)")
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
     @NotBlank(message = "Title is required")
@@ -64,6 +70,10 @@ public class Idea {
         joinColumns = @JoinColumn(name = "idea_id"))
     @Column(name = "tag", length = 50)
     private Set<String> tags = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", foreignKey = @ForeignKey(name = "fk_idea_employee", foreignKeyDefinition = "FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE"))
+    private Employee employee;
 
     public enum Priority {
         HIGH, MEDIUM, LOW

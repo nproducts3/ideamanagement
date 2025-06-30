@@ -29,4 +29,5 @@ public class IdeaDto {
     private LocalDate createdDate;
     private LocalDateTime createdAt;
     private Set<String> tags;
+    private UUID employeeId;
 } 

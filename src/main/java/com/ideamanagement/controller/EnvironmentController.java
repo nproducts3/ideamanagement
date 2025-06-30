@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequestMapping("/api/environments")
 @RequiredArgsConstructor
 @Tag(name = "Environment Management", description = "APIs for managing environments")
-@CrossOrigin(origins = {"http://localhost:8081", "http://localhost:3000"}, allowCredentials = "true")
+// @CrossOrigin(origins = {"http://localhost:8081", "http://localhost:3000"}, allowCredentials = "true")
 public class EnvironmentController {
     private final EnvironmentService environmentService;
 

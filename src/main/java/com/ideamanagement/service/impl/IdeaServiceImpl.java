@@ -4,6 +4,8 @@ import com.ideamanagement.dto.IdeaDto;
 import com.ideamanagement.entity.Idea;
 import com.ideamanagement.repository.IdeaRepository;
 import com.ideamanagement.service.IdeaService;
+import com.ideamanagement.repository.EmployeeRepository;
+import com.ideamanagement.entity.Employee;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -19,9 +21,11 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class IdeaServiceImpl implements IdeaService {
     private final IdeaRepository ideaRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public IdeaServiceImpl(IdeaRepository ideaRepository) {
+    public IdeaServiceImpl(IdeaRepository ideaRepository, EmployeeRepository employeeRepository) {
         this.ideaRepository = ideaRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     @Override
@@ -29,7 +33,13 @@ public class IdeaServiceImpl implements IdeaService {
     public IdeaDto createIdea(IdeaDto ideaDto) {
         Idea idea = new Idea();
         copyFromDto(idea, ideaDto);
-        
+        if (ideaDto.getEmployeeId() != null) {
+            Employee employee = employeeRepository.findById(ideaDto.getEmployeeId())
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + ideaDto.getEmployeeId()));
+            idea.setEmployee(employee);
+        } else {
+            idea.setEmployee(null);
+        }
         // Set a new UUID for the idea
         idea.setId(UUID.randomUUID());
         
@@ -50,29 +60,40 @@ public class IdeaServiceImpl implements IdeaService {
 
     @Override
     @Transactional
-    public IdeaDto updateIdea(UUID id, IdeaDto ideaDto) {
-        Idea idea = ideaRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Idea not found with id: " + id));
-        
+    public IdeaDto updateIdea(UUID id, UUID employeeId, IdeaDto ideaDto) {
+        Idea idea = ideaRepository.findByIdAndEmployeeId(id, employeeId);
+        if (idea == null) {
+            throw new EntityNotFoundException("Idea not found with id: " + id + " for employee: " + employeeId);
+        }
         copyFromDto(idea, ideaDto);
+        if (ideaDto.getEmployeeId() != null) {
+            Employee employee = employeeRepository.findById(ideaDto.getEmployeeId())
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + ideaDto.getEmployeeId()));
+            idea.setEmployee(employee);
+        } else {
+            idea.setEmployee(null);
+        }
         Idea updatedIdea = ideaRepository.save(idea);
         return copyToDto(updatedIdea);
     }
 
     @Override
     @Transactional
-    public void deleteIdea(UUID id) {
-        if (!ideaRepository.existsById(id)) {
-            throw new EntityNotFoundException("Idea not found with id: " + id);
+    public void deleteIdea(UUID id, UUID employeeId) {
+        Idea idea = ideaRepository.findByIdAndEmployeeId(id, employeeId);
+        if (idea == null) {
+            throw new EntityNotFoundException("Idea not found with id: " + id + " for employee: " + employeeId);
         }
-        ideaRepository.deleteById(id);
+        ideaRepository.deleteByIdAndEmployeeId(id, employeeId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public IdeaDto getIdeaById(UUID id) {
-        Idea idea = ideaRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Idea not found with id: " + id));
+    public IdeaDto getIdeaById(UUID id, UUID employeeId) {
+        Idea idea = ideaRepository.findByIdAndEmployeeId(id, employeeId);
+        if (idea == null) {
+            throw new EntityNotFoundException("Idea not found with id: " + id + " for employee: " + employeeId);
+        }
         return copyToDto(idea);
     }
 
@@ -81,6 +102,12 @@ public class IdeaServiceImpl implements IdeaService {
     public Page<IdeaDto> getAllIdeas(Pageable pageable) {
         return ideaRepository.findAll(pageable)
             .map(this::copyToDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<IdeaDto> getAllIdeas(UUID employeeId, Pageable pageable) {
+        return ideaRepository.findByEmployeeId(employeeId, pageable).map(this::copyToDto);
     }
 
     @Override
@@ -104,6 +131,33 @@ public class IdeaServiceImpl implements IdeaService {
             .map(this::copyToDto);
     }
 
+    @Override
+    @Transactional
+    public IdeaDto patchIdea(UUID id, UUID employeeId, IdeaDto ideaDto) {
+        Idea idea = ideaRepository.findByIdAndEmployeeId(id, employeeId);
+        if (idea == null) {
+            throw new EntityNotFoundException("Idea not found with id: " + id + " for employee: " + employeeId);
+        }
+        // Only update non-null fields
+        if (ideaDto.getTitle() != null) idea.setTitle(ideaDto.getTitle());
+        if (ideaDto.getDescription() != null) idea.setDescription(ideaDto.getDescription());
+        if (ideaDto.getPriority() != null) idea.setPriority(ideaDto.getPriority());
+        if (ideaDto.getStatus() != null) idea.setStatus(ideaDto.getStatus());
+        if (ideaDto.getAssignedTo() != null) idea.setAssignedTo(ideaDto.getAssignedTo());
+        if (ideaDto.getDueDate() != null) idea.setDueDate(ideaDto.getDueDate());
+        if (ideaDto.getTags() != null) {
+            idea.getTags().clear();
+            idea.getTags().addAll(new java.util.HashSet<>(ideaDto.getTags()));
+        }
+        if (ideaDto.getEmployeeId() != null) {
+            Employee employee = employeeRepository.findById(ideaDto.getEmployeeId())
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + ideaDto.getEmployeeId()));
+            idea.setEmployee(employee);
+        }
+        Idea updatedIdea = ideaRepository.save(idea);
+        return copyToDto(updatedIdea);
+    }
+
     private void copyFromDto(Idea idea, IdeaDto dto) {
         idea.setTitle(dto.getTitle());
         idea.setDescription(dto.getDescription());
@@ -112,7 +166,8 @@ public class IdeaServiceImpl implements IdeaService {
         idea.setAssignedTo(dto.getAssignedTo());
         idea.setDueDate(dto.getDueDate());
         if (dto.getTags() != null) {
-            idea.setTags(dto.getTags());
+            idea.getTags().clear();
+            idea.getTags().addAll(new java.util.HashSet<>(dto.getTags()));
         }
     }
 
@@ -130,6 +185,9 @@ public class IdeaServiceImpl implements IdeaService {
         dto.setCreatedDate(idea.getCreatedDate());
         dto.setCreatedAt(idea.getCreatedAt());
         dto.setTags(idea.getTags());
+        if (idea.getEmployee() != null) {
+            dto.setEmployeeId(idea.getEmployee().getId());
+        }
         return dto;
     }
 } 

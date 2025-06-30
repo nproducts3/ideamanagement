@@ -16,4 +16,8 @@ public class Tag {
 
     @Column(unique = true, length = 100)
     private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
 } 

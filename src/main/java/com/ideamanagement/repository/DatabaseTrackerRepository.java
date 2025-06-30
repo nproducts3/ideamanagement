@@ -15,4 +15,7 @@ public interface DatabaseTrackerRepository extends JpaRepository<DatabaseTracker
     Page<DatabaseTracker> findByStatus(Status status, Pageable pageable);
     Page<DatabaseTracker> findByVersion(String version, Pageable pageable);
     boolean existsByName(String name);
+    Page<DatabaseTracker> findByEmployeeId(java.util.UUID employeeId, Pageable pageable);
+    DatabaseTracker findByIdAndEmployeeId(Integer id, java.util.UUID employeeId);
+    void deleteByIdAndEmployeeId(Integer id, java.util.UUID employeeId);
 } 

@@ -27,6 +27,10 @@ public class Like {
     @JoinColumn(name = "idea_id", nullable = false)
     private Idea idea;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -15,4 +15,5 @@ public class IntegrationSettingsDto {
     private String config;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UUID employeeId;
 } 

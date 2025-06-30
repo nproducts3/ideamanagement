@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequestMapping("/api/test-logs")
 @RequiredArgsConstructor
 @Tag(name = "API Test Log Management", description = "APIs for managing API test logs")
-@CrossOrigin(origins = {"http://localhost:8081", "http://localhost:3000"}, allowCredentials = "true")
+// @CrossOrigin(origins = "*", allowCredentials = "true")
 public class ApiTestLogController {
     private final ApiTestLogService apiTestLogService;
 

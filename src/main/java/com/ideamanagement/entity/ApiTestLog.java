@@ -42,6 +42,10 @@ public class ApiTestLog {
     @Column(name = "executed_at", nullable = false, updatable = false)
     private LocalDateTime executedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
     @PrePersist
     protected void onCreate() {
         executedAt = LocalDateTime.now();

@@ -26,7 +26,7 @@ import java.util.List;
 @RequestMapping("/api/database-trackers")
 @RequiredArgsConstructor
 @Tag(name = "Database Tracker", description = "Database tracker management APIs")
-@CrossOrigin(origins = {"http://localhost:8081", "http://localhost:3000"}, allowCredentials = "true")
+// @CrossOrigin(origins = "*", allowCredentials = "true")
 public class DatabaseTrackerController {
     private final DatabaseTrackerService databaseTrackerService;
 
@@ -41,8 +41,9 @@ public class DatabaseTrackerController {
         @ApiResponse(responseCode = "400", description = "Invalid input or name already exists")
     })
     public ResponseEntity<DatabaseTrackerDto> createDatabaseTracker(
-        @Parameter(description = "Database tracker to create", required = true)
+        @RequestParam java.util.UUID employeeId,
         @RequestBody DatabaseTrackerDto dto) {
+        dto.setEmployeeId(employeeId);
         return ResponseEntity.ok(databaseTrackerService.createDatabaseTracker(dto));
     }
 
@@ -61,8 +62,9 @@ public class DatabaseTrackerController {
         @Parameter(description = "ID of the database tracker to update", required = true)
         @PathVariable Integer id,
         @Parameter(description = "Updated database tracker information", required = true)
+        @RequestParam java.util.UUID employeeId,
         @RequestBody DatabaseTrackerDto dto) {
-        return ResponseEntity.ok(databaseTrackerService.updateDatabaseTracker(id, dto));
+        return ResponseEntity.ok(databaseTrackerService.updateDatabaseTracker(id, employeeId, dto));
     }
 
     @GetMapping("/{id}")
@@ -77,8 +79,10 @@ public class DatabaseTrackerController {
     })
     public ResponseEntity<DatabaseTrackerDto> getDatabaseTracker(
         @Parameter(description = "ID of the database tracker to retrieve", required = true)
-        @PathVariable Integer id) {
-        return ResponseEntity.ok(databaseTrackerService.getDatabaseTrackerById(id));
+        @PathVariable Integer id,
+        @Parameter(description = "Employee ID", required = true)
+        @RequestParam java.util.UUID employeeId) {
+        return ResponseEntity.ok(databaseTrackerService.getDatabaseTrackerById(id, employeeId));
     }
 
     @GetMapping
@@ -88,12 +92,14 @@ public class DatabaseTrackerController {
         @ApiResponse(responseCode = "400", description = "Invalid pagination or sorting parameters")
     })
     public ResponseEntity<Page<DatabaseTrackerDto>> getAllDatabaseTrackers(
-            @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Sort field (valid values: id, name, version, status, lastModified, tablesCount, migrationsCount)", example = "lastModified") 
-            @RequestParam(defaultValue = "lastModified") String sort,
-            @Parameter(description = "Sort direction (asc or desc)", example = "desc") 
-            @RequestParam(defaultValue = "desc") String direction) {
+        @Parameter(description = "Employee ID", required = true)
+        @RequestParam java.util.UUID employeeId,
+        @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
+        @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") int size,
+        @Parameter(description = "Sort field (valid values: id, name, version, status, lastModified, tablesCount, migrationsCount)", example = "lastModified") 
+        @RequestParam(defaultValue = "lastModified") String sort,
+        @Parameter(description = "Sort direction (asc or desc)", example = "desc") 
+        @RequestParam(defaultValue = "desc") String direction) {
         
         // Validate sort field
         List<String> validSortFields = Arrays.asList("id", "name", "version", "status", "lastModified", "tablesCount", "migrationsCount");
@@ -104,7 +110,7 @@ public class DatabaseTrackerController {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction.toUpperCase());
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         
-        return ResponseEntity.ok(databaseTrackerService.getAllDatabaseTrackers(pageable));
+        return ResponseEntity.ok(databaseTrackerService.getAllDatabaseTrackers(employeeId, pageable));
     }
 
     @DeleteMapping("/{id}")
@@ -118,8 +124,10 @@ public class DatabaseTrackerController {
     })
     public ResponseEntity<Void> deleteDatabaseTracker(
         @Parameter(description = "ID of the database tracker to delete", required = true)
-        @PathVariable Integer id) {
-        databaseTrackerService.deleteDatabaseTracker(id);
+        @PathVariable Integer id,
+        @Parameter(description = "Employee ID", required = true)
+        @RequestParam java.util.UUID employeeId) {
+        databaseTrackerService.deleteDatabaseTracker(id, employeeId);
         return ResponseEntity.noContent().build();
     }
 

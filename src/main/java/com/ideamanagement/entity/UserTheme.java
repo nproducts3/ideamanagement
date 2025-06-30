@@ -21,6 +21,10 @@ public class UserTheme {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "theme", nullable = false)
     private ThemeType theme = ThemeType.BLUE;

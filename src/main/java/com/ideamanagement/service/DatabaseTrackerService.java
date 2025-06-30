@@ -34,23 +34,25 @@ public class DatabaseTrackerService {
         return copyToDto(entity);
     }
 
-    public DatabaseTrackerDto updateDatabaseTracker(Integer id, DatabaseTrackerDto dto) {
-        DatabaseTracker entity = databaseTrackerRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Database tracker not found with id: " + id));
-
+    public DatabaseTrackerDto updateDatabaseTracker(Integer id, java.util.UUID employeeId, DatabaseTrackerDto dto) {
+        DatabaseTracker entity = databaseTrackerRepository.findByIdAndEmployeeId(id, employeeId);
+        if (entity == null) {
+            throw new EntityNotFoundException("Database tracker not found with id: " + id + " for employee: " + employeeId);
+        }
         if (!entity.getName().equals(dto.getName()) && databaseTrackerRepository.existsByName(dto.getName())) {
             throw new IllegalStateException("Database tracker with name " + dto.getName() + " already exists");
         }
-
         copyToEntity(dto, entity);
-        entity.setLastModified(LocalDate.now());
+        entity.setLastModified(java.time.LocalDate.now());
         entity = databaseTrackerRepository.save(entity);
         return copyToDto(entity);
     }
 
-    public DatabaseTrackerDto getDatabaseTrackerById(Integer id) {
-        DatabaseTracker entity = databaseTrackerRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Database tracker not found with id: " + id));
+    public DatabaseTrackerDto getDatabaseTrackerById(Integer id, java.util.UUID employeeId) {
+        DatabaseTracker entity = databaseTrackerRepository.findByIdAndEmployeeId(id, employeeId);
+        if (entity == null) {
+            throw new EntityNotFoundException("Database tracker not found with id: " + id + " for employee: " + employeeId);
+        }
         return copyToDto(entity);
     }
 
@@ -60,9 +62,8 @@ public class DatabaseTrackerService {
         return copyToDto(entity);
     }
 
-    public Page<DatabaseTrackerDto> getAllDatabaseTrackers(Pageable pageable) {
-        return databaseTrackerRepository.findAll(pageable)
-            .map(this::copyToDto);
+    public org.springframework.data.domain.Page<DatabaseTrackerDto> getAllDatabaseTrackers(java.util.UUID employeeId, org.springframework.data.domain.Pageable pageable) {
+        return databaseTrackerRepository.findByEmployeeId(employeeId, pageable).map(this::copyToDto);
     }
 
     public Page<DatabaseTrackerDto> getDatabaseTrackersByStatus(Status status, Pageable pageable) {
@@ -75,11 +76,12 @@ public class DatabaseTrackerService {
             .map(this::copyToDto);
     }
 
-    public void deleteDatabaseTracker(Integer id) {
-        if (!databaseTrackerRepository.existsById(id)) {
-            throw new EntityNotFoundException("Database tracker not found with id: " + id);
+    public void deleteDatabaseTracker(Integer id, java.util.UUID employeeId) {
+        DatabaseTracker entity = databaseTrackerRepository.findByIdAndEmployeeId(id, employeeId);
+        if (entity == null) {
+            throw new EntityNotFoundException("Database tracker not found with id: " + id + " for employee: " + employeeId);
         }
-        databaseTrackerRepository.deleteById(id);
+        databaseTrackerRepository.deleteByIdAndEmployeeId(id, employeeId);
     }
 
     public DatabaseTrackerDto updateStatus(Integer id, Status status) {
@@ -93,7 +95,7 @@ public class DatabaseTrackerService {
     }
 
     private void copyToEntity(DatabaseTrackerDto dto, DatabaseTracker entity) {
-        BeanUtils.copyProperties(dto, entity, "id", "lastModified");
+        BeanUtils.copyProperties(dto, entity, "id", "lastModified", "employee");
         if (dto.getMigrationsJson() == null) {
             entity.setMigrationsJson("[]");
         }
@@ -103,11 +105,19 @@ public class DatabaseTrackerService {
         if (dto.getMigrationsCount() == null) {
             entity.setMigrationsCount(0);
         }
+        if (dto.getEmployeeId() != null) {
+            com.ideamanagement.entity.Employee emp = new com.ideamanagement.entity.Employee();
+            emp.setId(dto.getEmployeeId());
+            entity.setEmployee(emp);
+        }
     }
 
     private DatabaseTrackerDto copyToDto(DatabaseTracker entity) {
         DatabaseTrackerDto dto = new DatabaseTrackerDto();
         BeanUtils.copyProperties(entity, dto);
+        if (entity.getEmployee() != null) {
+            dto.setEmployeeId(entity.getEmployee().getId());
+        }
         return dto;
     }
 } 

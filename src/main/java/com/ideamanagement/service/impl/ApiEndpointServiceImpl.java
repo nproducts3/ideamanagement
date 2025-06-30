@@ -30,9 +30,11 @@ public class ApiEndpointServiceImpl implements ApiEndpointService {
 
     @Override
     @Transactional
-    public ApiEndpointDto updateEndpoint(UUID id, ApiEndpointDto endpointDto) {
-        ApiEndpoint endpoint = apiEndpointRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("API endpoint not found with id: " + id));
+    public ApiEndpointDto updateEndpoint(UUID id, UUID employeeId, ApiEndpointDto endpointDto) {
+        ApiEndpoint endpoint = apiEndpointRepository.findByIdAndEmployeeId(id, employeeId);
+        if (endpoint == null) {
+            throw new EntityNotFoundException("API endpoint not found with id: " + id + " for employee: " + employeeId);
+        }
         copyFromDto(endpoint, endpointDto);
         ApiEndpoint updatedEndpoint = apiEndpointRepository.save(endpoint);
         return copyToDto(updatedEndpoint);
@@ -40,24 +42,26 @@ public class ApiEndpointServiceImpl implements ApiEndpointService {
 
     @Override
     @Transactional
-    public void deleteEndpoint(UUID id) {
-        if (!apiEndpointRepository.existsById(id)) {
-            throw new EntityNotFoundException("API endpoint not found with id: " + id);
+    public void deleteEndpoint(UUID id, UUID employeeId) {
+        ApiEndpoint endpoint = apiEndpointRepository.findByIdAndEmployeeId(id, employeeId);
+        if (endpoint == null) {
+            throw new EntityNotFoundException("API endpoint not found with id: " + id + " for employee: " + employeeId);
         }
-        apiEndpointRepository.deleteById(id);
+        apiEndpointRepository.deleteByIdAndEmployeeId(id, employeeId);
     }
 
     @Override
-    public ApiEndpointDto getEndpointById(UUID id) {
-        ApiEndpoint endpoint = apiEndpointRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("API endpoint not found with id: " + id));
+    public ApiEndpointDto getEndpointById(UUID id, UUID employeeId) {
+        ApiEndpoint endpoint = apiEndpointRepository.findByIdAndEmployeeId(id, employeeId);
+        if (endpoint == null) {
+            throw new EntityNotFoundException("API endpoint not found with id: " + id + " for employee: " + employeeId);
+        }
         return copyToDto(endpoint);
     }
 
     @Override
-    public Page<ApiEndpointDto> getAllEndpoints(Pageable pageable) {
-        return apiEndpointRepository.findAll(pageable)
-            .map(this::copyToDto);
+    public Page<ApiEndpointDto> getAllEndpoints(UUID employeeId, Pageable pageable) {
+        return apiEndpointRepository.findByEmployeeId(employeeId, pageable).map(this::copyToDto);
     }
 
     @Override
@@ -86,6 +90,11 @@ public class ApiEndpointServiceImpl implements ApiEndpointService {
         endpoint.setVersion(dto.getVersion());
         endpoint.setLastTested(dto.getLastTested());
         endpoint.setResponseTimeMs(dto.getResponseTimeMs());
+        if (dto.getEmployeeId() != null) {
+            com.ideamanagement.entity.Employee emp = new com.ideamanagement.entity.Employee();
+            emp.setId(dto.getEmployeeId());
+            endpoint.setEmployee(emp);
+        }
     }
 
     private ApiEndpointDto copyToDto(ApiEndpoint endpoint) {

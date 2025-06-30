@@ -13,4 +13,7 @@ public interface ApiEndpointRepository extends JpaRepository<ApiEndpoint, UUID> 
     Page<ApiEndpoint> findByStatus(ApiEndpoint.Status status, Pageable pageable);
     Page<ApiEndpoint> findByMethod(ApiEndpoint.HttpMethod method, Pageable pageable);
     Page<ApiEndpoint> findByVersion(String version, Pageable pageable);
+    Page<ApiEndpoint> findByEmployeeId(UUID employeeId, Pageable pageable);
+    ApiEndpoint findByIdAndEmployeeId(UUID id, UUID employeeId);
+    void deleteByIdAndEmployeeId(UUID id, UUID employeeId);
 } 

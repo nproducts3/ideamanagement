@@ -52,6 +52,10 @@ public class ApiEndpoint {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

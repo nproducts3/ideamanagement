@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequestMapping("/api/ideas")
 @RequiredArgsConstructor
 @Tag(name = "Idea Management", description = "APIs for managing ideas")
-@CrossOrigin(origins = {"http://localhost:8081", "http://localhost:3000"}, allowCredentials = "true")
+// @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
 public class IdeaController {
 
     private final IdeaService ideaService;
@@ -58,9 +58,10 @@ public class IdeaController {
     public ResponseEntity<IdeaDto> updateIdea(
         @Parameter(description = "ID of the idea to update", required = true)
         @PathVariable UUID id,
+        @RequestParam UUID employeeId,
         @Parameter(description = "Updated idea details", required = true)
         @Valid @RequestBody IdeaDto ideaDto) {
-        return ResponseEntity.ok(ideaService.updateIdea(id, ideaDto));
+        return ResponseEntity.ok(ideaService.updateIdea(id, employeeId, ideaDto));
     }
 
     @DeleteMapping("/{id}")
@@ -74,8 +75,9 @@ public class IdeaController {
     })
     public ResponseEntity<Void> deleteIdea(
         @Parameter(description = "ID of the idea to delete", required = true)
-        @PathVariable UUID id) {
-        ideaService.deleteIdea(id);
+        @PathVariable UUID id,
+        @RequestParam UUID employeeId) {
+        ideaService.deleteIdea(id, employeeId);
         return ResponseEntity.noContent().build();
     }
 
@@ -91,8 +93,9 @@ public class IdeaController {
     })
     public ResponseEntity<IdeaDto> getIdeaById(
         @Parameter(description = "ID of the idea to retrieve", required = true)
-        @PathVariable UUID id) {
-        return ResponseEntity.ok(ideaService.getIdeaById(id));
+        @PathVariable UUID id,
+        @RequestParam UUID employeeId) {
+        return ResponseEntity.ok(ideaService.getIdeaById(id, employeeId));
     }
 
     @GetMapping
@@ -105,9 +108,13 @@ public class IdeaController {
             content = @Content(schema = @Schema(implementation = Page.class)))
     })
     public ResponseEntity<Page<IdeaDto>> getAllIdeas(
-        @Parameter(description = "Pagination and sorting parameters")
+        @RequestParam(required = false) UUID employeeId,
         Pageable pageable) {
-        return ResponseEntity.ok(ideaService.getAllIdeas(pageable));
+        if (employeeId != null) {
+            return ResponseEntity.ok(ideaService.getAllIdeas(employeeId, pageable));
+        } else {
+            return ResponseEntity.ok(ideaService.getAllIdeas(pageable));
+        }
     }
 
     @GetMapping("/assigned/{assignee}")
@@ -159,5 +166,13 @@ public class IdeaController {
         @Parameter(description = "Pagination and sorting parameters")
         Pageable pageable) {
         return ResponseEntity.ok(ideaService.getIdeasByTag(tag, pageable));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<IdeaDto> patchIdea(
+        @PathVariable UUID id,
+        @RequestParam UUID employeeId,
+        @RequestBody IdeaDto ideaDto) {
+        return ResponseEntity.ok(ideaService.patchIdea(id, employeeId, ideaDto));
     }
 } 

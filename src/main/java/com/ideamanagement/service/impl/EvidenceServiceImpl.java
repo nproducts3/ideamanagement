@@ -2,12 +2,14 @@ package com.ideamanagement.service.impl;
 
 import com.ideamanagement.dto.EvidenceDto;
 import com.ideamanagement.entity.Evidence;
+import com.ideamanagement.entity.Employee;
 import com.ideamanagement.entity.Idea;
 import com.ideamanagement.entity.Project;
 import com.ideamanagement.entity.User;
 import com.ideamanagement.exception.DuplicateResourceException;
 import com.ideamanagement.exception.ResourceNotFoundException;
 import com.ideamanagement.repository.EvidenceRepository;
+import com.ideamanagement.repository.EmployeeRepository;
 import com.ideamanagement.repository.IdeaRepository;
 import com.ideamanagement.repository.ProjectRepository;
 import com.ideamanagement.repository.UserRepository;
@@ -38,6 +40,7 @@ public class EvidenceServiceImpl implements EvidenceService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final IdeaRepository ideaRepository;
+    private final EmployeeRepository employeeRepository;
 
     // Define a directory for storing uploaded files
     // You might want to make this configurable in application.properties
@@ -71,6 +74,11 @@ public class EvidenceServiceImpl implements EvidenceService {
             idea = ideaRepository.findById(evidenceDto.getIdeaId())
                     .orElseThrow(() -> new ResourceNotFoundException("Idea not found with ID: " + evidenceDto.getIdeaId()));
         }
+        Employee employee = null;
+        if (evidenceDto.getEmployeeId() != null) {
+            employee = employeeRepository.findById(evidenceDto.getEmployeeId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + evidenceDto.getEmployeeId()));
+        }
 
         Evidence evidence = new Evidence();
         evidence.setTitle(evidenceDto.getTitle());
@@ -82,6 +90,7 @@ public class EvidenceServiceImpl implements EvidenceService {
         evidence.setProject(project);
         evidence.setUploadedBy(uploadedBy);
         evidence.setIdea(idea);
+        evidence.setEmployee(employee);
         evidence.setTags(evidenceDto.getTags());
 
         // Handle file upload if type is FILE and a file is provided
@@ -156,18 +165,46 @@ public class EvidenceServiceImpl implements EvidenceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<EvidenceDto> getEvidenceByEmployee(UUID employeeId, Pageable pageable) {
+        return evidenceRepository.findByEmployeeId(employeeId, pageable)
+                .map(this::convertToDto);
+    }
+
+    @Override
     public EvidenceDto updateEvidence(UUID id, EvidenceDto evidenceDto) {
         Evidence existingEvidence = evidenceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Evidence not found with ID: " + id));
 
         // Update fields
-        existingEvidence.setTitle(evidenceDto.getTitle());
-        existingEvidence.setDescription(evidenceDto.getDescription());
-        existingEvidence.setType(evidenceDto.getType());
-        existingEvidence.setCategory(evidenceDto.getCategory());
-        existingEvidence.setStatus(evidenceDto.getStatus());
-        existingEvidence.setUrl(evidenceDto.getUrl());
-        existingEvidence.setTags(evidenceDto.getTags());
+        if (evidenceDto.getTitle() != null) {
+            existingEvidence.setTitle(evidenceDto.getTitle());
+        }
+        if (evidenceDto.getDescription() != null) {
+            existingEvidence.setDescription(evidenceDto.getDescription());
+        }
+        if (evidenceDto.getType() != null) {
+            existingEvidence.setType(evidenceDto.getType());
+        }
+        if (evidenceDto.getCategory() != null) {
+            existingEvidence.setCategory(evidenceDto.getCategory());
+        }
+        if (evidenceDto.getStatus() != null) {
+            existingEvidence.setStatus(evidenceDto.getStatus());
+        }
+        if (evidenceDto.getUrl() != null) {
+            existingEvidence.setUrl(evidenceDto.getUrl());
+        }
+        if (evidenceDto.getTags() != null) {
+            existingEvidence.setTags(evidenceDto.getTags());
+        }
+        
+        // Handle employee update
+        if (evidenceDto.getEmployeeId() != null) {
+            Employee employee = employeeRepository.findById(evidenceDto.getEmployeeId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + evidenceDto.getEmployeeId()));
+            existingEvidence.setEmployee(employee);
+        }
 
         // File-related updates (if a file is part of the update or URL changes)
         if (evidenceDto.getType() == Evidence.EvidenceType.FILE && evidenceDto.getFileName() != null) {
@@ -242,6 +279,8 @@ public class EvidenceServiceImpl implements EvidenceService {
         dto.setUploadedAt(evidence.getUploadedAt());
         dto.setUpdatedAt(evidence.getUpdatedAt());
         dto.setTags(evidence.getTags());
+        
+        // Handle lazy-loaded relationships safely
         if (evidence.getIdea() != null) {
             dto.setIdeaId(evidence.getIdea().getId());
         }
@@ -251,6 +290,10 @@ public class EvidenceServiceImpl implements EvidenceService {
         if (evidence.getUploadedBy() != null) {
             dto.setUploadedBy(evidence.getUploadedBy().getId());
         }
+        if (evidence.getEmployee() != null) {
+            dto.setEmployeeId(evidence.getEmployee().getId());
+        }
+        
         return dto;
     }
 
@@ -285,6 +328,11 @@ public class EvidenceServiceImpl implements EvidenceService {
             Idea idea = ideaRepository.findById(dto.getIdeaId())
                     .orElseThrow(() -> new ResourceNotFoundException("Idea not found with ID: " + dto.getIdeaId()));
             evidence.setIdea(idea);
+        }
+        if (dto.getEmployeeId() != null) {
+            Employee employee = employeeRepository.findById(dto.getEmployeeId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + dto.getEmployeeId()));
+            evidence.setEmployee(employee);
         }
         return evidence;
     }

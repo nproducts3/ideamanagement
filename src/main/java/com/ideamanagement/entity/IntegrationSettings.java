@@ -22,6 +22,10 @@ public class IntegrationSettings {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private IntegrationType type;

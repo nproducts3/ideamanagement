@@ -25,4 +25,5 @@ public class ApiEndpointDto {
     private Integer responseTimeMs;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UUID employeeId;
 } 

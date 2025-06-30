@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequestMapping("/api/deployments")
 @RequiredArgsConstructor
 @Tag(name = "Deployment Management", description = "APIs for managing deployments")
-@CrossOrigin(origins = {"http://localhost:8081", "http://localhost:3000"}, allowCredentials = "true")
+// @CrossOrigin(origins = "*", allowCredentials = "true")
 public class DeploymentController {
     private final DeploymentService deploymentService;
 
@@ -35,8 +35,10 @@ public class DeploymentController {
         @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     public ResponseEntity<DeploymentDto> createDeployment(
+        @RequestParam UUID employeeId,
         @Parameter(description = "Deployment details", required = true)
         @Valid @RequestBody DeploymentDto deploymentDto) {
+        deploymentDto.setEmployeeId(employeeId);
         return ResponseEntity.ok(deploymentService.createDeployment(deploymentDto));
     }
 
@@ -49,11 +51,11 @@ public class DeploymentController {
         @ApiResponse(responseCode = "404", description = "Deployment not found")
     })
     public ResponseEntity<DeploymentDto> updateDeployment(
-        @Parameter(description = "ID of the deployment to update", required = true)
         @PathVariable UUID id,
+        @RequestParam UUID employeeId,
         @Parameter(description = "Updated deployment details", required = true)
         @Valid @RequestBody DeploymentDto deploymentDto) {
-        return ResponseEntity.ok(deploymentService.updateDeployment(id, deploymentDto));
+        return ResponseEntity.ok(deploymentService.updateDeployment(id, employeeId, deploymentDto));
     }
 
     @DeleteMapping("/{id}")
@@ -63,9 +65,9 @@ public class DeploymentController {
         @ApiResponse(responseCode = "404", description = "Deployment not found")
     })
     public ResponseEntity<Void> deleteDeployment(
-        @Parameter(description = "ID of the deployment to delete", required = true)
-        @PathVariable UUID id) {
-        deploymentService.deleteDeployment(id);
+        @PathVariable UUID id,
+        @RequestParam UUID employeeId) {
+        deploymentService.deleteDeployment(id, employeeId);
         return ResponseEntity.ok().build();
     }
 
@@ -77,9 +79,9 @@ public class DeploymentController {
         @ApiResponse(responseCode = "404", description = "Deployment not found")
     })
     public ResponseEntity<DeploymentDto> getDeploymentById(
-        @Parameter(description = "ID of the deployment to retrieve", required = true)
-        @PathVariable UUID id) {
-        return ResponseEntity.ok(deploymentService.getDeploymentById(id));
+        @PathVariable UUID id,
+        @RequestParam UUID employeeId) {
+        return ResponseEntity.ok(deploymentService.getDeploymentById(id, employeeId));
     }
 
     @GetMapping
@@ -89,9 +91,10 @@ public class DeploymentController {
             content = @Content(schema = @Schema(implementation = Page.class)))
     })
     public ResponseEntity<Page<DeploymentDto>> getAllDeployments(
+        @RequestParam UUID employeeId,
         @Parameter(description = "Pagination and sorting parameters")
         Pageable pageable) {
-        return ResponseEntity.ok(deploymentService.getAllDeployments(pageable));
+        return ResponseEntity.ok(deploymentService.getAllDeployments(employeeId, pageable));
     }
 
     @GetMapping("/environment/{environment}")
@@ -148,5 +151,13 @@ public class DeploymentController {
         @Parameter(description = "Pagination and sorting parameters")
         Pageable pageable) {
         return ResponseEntity.ok(deploymentService.getDeploymentsByVersion(version, pageable));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<DeploymentDto> patchDeployment(
+        @PathVariable UUID id,
+        @RequestParam UUID employeeId,
+        @RequestBody DeploymentDto deploymentDto) {
+        return ResponseEntity.ok(deploymentService.patchDeployment(id, employeeId, deploymentDto));
     }
 } 

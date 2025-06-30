@@ -9,11 +9,13 @@ import java.util.UUID;
 
 public interface IdeaService {
     IdeaDto createIdea(IdeaDto ideaDto);
-    IdeaDto updateIdea(UUID id, IdeaDto ideaDto);
-    IdeaDto getIdeaById(UUID id);
-    Page<IdeaDto> getAllIdeas(Pageable pageable);
+    IdeaDto updateIdea(UUID id, UUID employeeId, IdeaDto ideaDto);
+    IdeaDto getIdeaById(UUID id, UUID employeeId);
+    Page<IdeaDto> getAllIdeas(UUID employeeId, Pageable pageable);
     Page<IdeaDto> getIdeasByAssignee(String assignee, Pageable pageable);
     Page<IdeaDto> getIdeasByStatus(Idea.Status status, Pageable pageable);
     Page<IdeaDto> getIdeasByTag(String tag, Pageable pageable);
-    void deleteIdea(UUID id);
+    void deleteIdea(UUID id, UUID employeeId);
+    IdeaDto patchIdea(UUID id, UUID employeeId, IdeaDto ideaDto);
+    Page<IdeaDto> getAllIdeas(Pageable pageable);
 } 

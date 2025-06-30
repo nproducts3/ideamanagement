@@ -10,5 +10,6 @@ public class LikeDto {
     private UUID id;
     private UUID userId;
     private UUID ideaId;
+    private UUID employeeId;
     private LocalDateTime createdAt;
 } 

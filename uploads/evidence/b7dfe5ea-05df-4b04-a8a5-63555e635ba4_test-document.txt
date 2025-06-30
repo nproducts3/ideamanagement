@@ -1,0 +1,10 @@
+This is a test document for evidence upload API testing.
+It contains sample content to verify that the file upload functionality works correctly.
+
+Test data:
+- Title: Test Document
+- Description: Sample test file for API testing
+- Category: Testing
+- Tags: test, documentation, api
+
+This file was created for testing the evidence upload endpoint at http://localhost:8080/api/evidence 

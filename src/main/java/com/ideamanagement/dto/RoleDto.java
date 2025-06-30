@@ -12,4 +12,5 @@ public class RoleDto {
     private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UUID employeeId;
 } 

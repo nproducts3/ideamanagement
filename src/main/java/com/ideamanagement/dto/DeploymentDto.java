@@ -30,7 +30,6 @@ public class DeploymentDto {
     @Size(max = 20, message = "Version must be less than 20 characters")
     private String version;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime deployedAt;
 
     @NotBlank(message = "Branch is required")
@@ -47,9 +46,9 @@ public class DeploymentDto {
     @Pattern(regexp = "^[0-9]{1,3}$", message = "Progress must be a number between 0 and 999")
     private String progress;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
+
+    private UUID employeeId;
 } 
